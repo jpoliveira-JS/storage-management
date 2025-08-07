@@ -1,4 +1,4 @@
-import Card from '@/components/Card'
+import Card from '@/components/card'
 import Sort from '@/components/Sort'
 import { getFiles } from '@/lib/actions/file.actions'
 import { Models } from 'node-appwrite'

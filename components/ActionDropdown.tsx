@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -26,6 +25,8 @@ import Link from 'next/link'
 import { constructDownloadUrl } from '@/lib/utils'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
+import { renameFile } from '@/lib/actions/file.actions'
+import { usePathname } from 'next/navigation'
 
 const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [isModelOpen, setIsModelOpen] = useState(false)
@@ -33,6 +34,8 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [action, setAction] = useState<ActionType | null>(null)
   const [name, setName] = useState(file.name)
   const [isLoading, setIsLoading] = useState(false)
+
+  const path = usePathname()
 
   const closeAllModals = () => {
     setIsModelOpen(false)
@@ -44,6 +47,21 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
 
   const handleAction = async () => {
     if (!action) return
+    setIsLoading(true)
+    let success = false
+
+    const actions = {
+      rename: () =>
+        renameFile({ fileId: file.$id, name, extension: file.extension, path }),
+      share: () => console.log('Share action not implemented'),
+      delete: () => console.log('Delete action not implemented'),
+    }
+
+    success = await actions[action.value as keyof typeof actions]()
+
+    if (success) closeAllModals()
+
+    setIsLoading(false)
   }
 
   const renderDialogContent = () => {
@@ -52,7 +70,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
     const { value, label } = action
 
     return (
-      <DialogContent className='shad-dialog-button'>
+      <DialogContent className='shad-dialog'>
         <DialogHeader className='flex flex-col gap-3'>
           <DialogTitle className='text-center text-light-100'>
             {label}
@@ -99,7 +117,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
             height={34}
           />
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent className='shad-dialog-button'>
           <DropdownMenuLabel className='max-w-[200px] truncate'>
             {file.name}
           </DropdownMenuLabel>
@@ -148,7 +166,6 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      {}
       {renderDialogContent()}
     </Dialog>
   )
